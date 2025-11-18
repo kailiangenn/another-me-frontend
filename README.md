@@ -49,9 +49,10 @@ ame-frontend/
 │   │   │   ├── ActionCard.tsx         # 操作卡片
 │   │   │   ├── AnalysisResult.tsx     # 分析结果展示
 │   │   │   ├── DataChart.tsx          # 数据图表
+│   │   │   ├── EChartsGraph.tsx       # ECharts 图谱可视化
 │   │   │   ├── EmptyState.tsx         # 空状态占位
 │   │   │   ├── ErrorBoundary.tsx      # 错误边界
-│   │   │   ├── GraphVisualization.tsx # 图谱可视化
+│   │   │   ├── GraphVisualization.tsx # 图谱可视化（旧）
 │   │   │   ├── StatCard.tsx           # 统计卡片
 │   │   │   └── index.ts
 │   │   └── mode/              # 场景模式组件 (11 个)
@@ -75,15 +76,16 @@ ame-frontend/
 │   │   ├── useMode.ts         # 场景模式切换
 │   │   ├── useStreamChat.ts   # SSE 流式对话
 │   │   └── index.ts
-│   ├── pages/                 # 页面组件 (8 个)
-│   │   ├── HomePage.tsx       # 首页 - 系统概览
-│   │   ├── ChatPage.tsx       # MEM 对话页
-│   │   ├── KnowledgePage.tsx  # RAG 知识库页
-│   │   ├── GraphPage.tsx      # 知识图谱页
-│   │   ├── MemoryPage.tsx     # 记忆管理页
-│   │   ├── WorkPage.tsx       # 工作场景页
-│   │   ├── LifePage.tsx       # 生活场景页
-│   │   └── ConfigPage.tsx     # 配置页
+│   ├── pages/                 # 页面组件 (9 个)
+│   │   ├── HomePage.tsx                    # 首页 - 系统概览
+│   │   ├── ChatPage.tsx                    # MEM 对话页
+│   │   ├── KnowledgePage.tsx               # RAG 知识库页
+│   │   ├── GraphPage.tsx                   # 知识图谱页（ECharts）
+│   │   ├── MemoryPage.tsx                  # 记忆管理页
+│   │   ├── WorkPage.tsx                    # 工作场景页
+│   │   ├── LifePage.tsx                    # 生活场景页
+│   │   ├── ConfigPage.tsx                  # 配置页
+│   │   └── ProjectAnalysisDetailPage.tsx   # 项目拆解详情页
 │   ├── store/                 # Zustand 状态管理 (6 个 Store)
 │   │   ├── chatStore.ts       # 对话状态
 │   │   ├── configStore.ts     # 配置状态 (持久化)
@@ -93,10 +95,10 @@ ame-frontend/
 │   │   ├── uiStore.ts         # UI 状态 (持久化)
 │   │   └── index.ts
 │   ├── types/                 # TypeScript 类型定义
-│   │   ├── api.ts             # API 接口类型 (20+ 个接口)
+│   │   ├── api.ts             # API 接口类型 (30+ 个接口)
 │   │   ├── app.ts             # 应用通用类型
 │   │   ├── mode.ts            # 场景模式类型
-│   │   ├── work.ts            # 工作场景类型 (6 个接口)
+│   │   ├── work.ts            # 工作场景类型 (10+ 个接口)
 │   │   ├── life.ts            # 生活场景类型 (12 个接口)
 │   │   └── index.ts
 │   ├── utils/                 # 工具函数
@@ -163,9 +165,9 @@ ame-frontend/
 ## 🔌 API 接口规范
 
 ### 配置管理
-- `POST /config/save` - 保存配置
-- `GET /config/load` - 加载配置
-- `POST /config/test` - 测试配置
+- `POST /api/v1/config/save` - 保存配置
+- `GET /api/v1/config/load` - 加载配置
+- `POST /api/v1/config/test` - 测试配置
 
 ### RAG 知识库
 - `POST /rag/upload` - 上传文档
@@ -182,10 +184,13 @@ ame-frontend/
 - `DELETE /mem/memories/{id}` - 删除记忆
 
 ### 工作场景
-- `POST /work/weekly-report` - 生成周报
-- `POST /work/organize-todos` - 整理待办
-- `POST /work/summarize-meeting` - 会议总结
-- `POST /work/track-project` - 项目进度
+- `POST /api/v1/work/weekly-report` - 生成周报
+- `POST /api/v1/work/organize-todos` - 整理待办
+- `POST /api/v1/work/summarize-meeting` - 会议总结
+- `POST /api/v1/work/track-project` - 项目进度
+- `POST /api/v1/work/project/analysis` - 项目拆解分析
+- `GET /api/v1/work/project/history` - 历史项目查询
+- `GET /api/v1/work/suggest/list` - 智能工作建议列表
 
 ### 生活场景
 - `POST /life/analyze-mood` - 心情分析
@@ -195,11 +200,12 @@ ame-frontend/
 - `POST /life/record-event` - 记录事件
 
 ### 知识图谱
-- `GET /graph/entity/{name}` - 实体图谱
-- `GET /graph/document/{id}` - 文档图谱
-- `GET /graph/stats` - 图谱统计
-- `POST /graph/query` - Cypher 查询
-- `POST /graph/search` - 搜索实体
+- `GET /api/v1/rag/graph` - RAG 知识图谱（支持 work/life/mem 类型）
+- `GET /api/v1/graph/entity/{name}` - 实体图谱
+- `GET /api/v1/graph/document/{id}` - 文档图谱
+- `GET /api/v1/graph/stats` - 图谱统计
+- `POST /api/v1/graph/query` - Cypher 查询
+- `POST /api/v1/graph/search` - 搜索实体
 
 ---
 
@@ -262,6 +268,8 @@ ame-frontend/
 | Ant Design | 5.12 | UI 组件 |
 | Zustand | 4.4 | 状态管理 |
 | Axios | 1.6 | HTTP 客户端 |
+| ECharts | 6.0 | 图谱可视化 |
+| React Markdown | 9.0 | Markdown 渲染 |
 
 ---
 
@@ -422,6 +430,9 @@ Component → API Client → SSE Stream → Callback → Update UI
 - ⚠️ `POST /work/organize-todos`
 - ⚠️ `POST /work/summarize-meeting`
 - ⚠️ `POST /work/track-project`
+- ✅ `POST /work/project/analysis` - 项目拆解分析
+- ✅ `GET /work/project/history` - 历史项目查询
+- ✅ `GET /work/suggest/list` - 智能工作建议
 
 #### 生活场景 (Life)
 - ⚠️ `POST /life/analyze-mood`
@@ -431,6 +442,7 @@ Component → API Client → SSE Stream → Callback → Update UI
 - ⚠️ `POST /life/record-event`
 
 #### 知识图谱 (Graph)
+- ✅ `GET /rag/graph` - RAG 知识图谱（ECharts 可视化）
 - ⚠️ `GET /graph/entity/{name}`
 - ⚠️ `GET /graph/document/{id}`
 - ⚠️ `GET /graph/stats`
@@ -451,8 +463,10 @@ interface APIConfig {
   api_key: string;              // OpenAI API Key
   base_url: string;             // API 基础 URL
   model: string;                // LLM 模型名称
-  embedding_model?: string;     // Embedding 模型名称
-  embedding_dimension?: number; // Embedding 向量维度
+  embedding_mode: string;       // Embedding 模型名称（后端字段）
+  embedding_dim: string;        // Embedding 向量维度（后端字段）
+  embedding_model?: string;     // Embedding 模型（前端兼容）
+  embedding_dimension?: number; // Embedding 维度（前端兼容）
 }
 
 /** 配置测试结果 */
@@ -462,6 +476,26 @@ interface ConfigTestResult {
   model_available?: boolean;        // LLM 模型是否可用
   embedding_available?: boolean;    // Embedding 模型是否可用
   embedding_dimension?: number;     // 实际的向量维度
+}
+
+/** 配置加载响应 */
+interface ConfigLoadResponse {
+  code: number;
+  msg: string;
+  data: {
+    api_key: string;
+    base_url: string;
+    model: string;
+    embedding_mode: string;
+    embedding_dim: string;
+  };
+}
+
+/** 配置测试响应 */
+interface ConfigTestResponse {
+  code: number;
+  msg: string;
+  data: boolean;  // true 表示测试成功
 }
 ```
 
@@ -548,6 +582,34 @@ interface TodoItem {
   deadline?: string;
   dependencies?: string[];
   created_at: string;
+}
+
+/** 项目拆解分析请求 */
+interface ProjectAnalysisRequest {
+  project_desc: string;
+}
+
+/** 项目拆解分析响应 */
+interface ProjectAnalysisResponse {
+  code: number;
+  msg: string;
+  fileTitle: string;
+  fileUrl: string;
+}
+
+/** 历史项目响应 */
+interface ProjectHistoryResponse {
+  code: number;
+  msg: string;
+  data: ProjectAnalysisHistory[];
+}
+
+/** 智能工作建议响应 */
+interface WorkSuggestResponse {
+  code: number;
+  msg: string;
+  data: string[];
+  pageable: Pageable;
 }
 
 /** 周报响应 */
@@ -973,15 +1035,37 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 📈 项目统计
 
-- **代码行数**: ~8,000 行
-- **组件数量**: 20+ 个
-- **API 接口**: 27 个
-- **类型定义**: 50+ 个
+- **代码行数**: ~10,000 行
+- **组件数量**: 22+ 个
+- **API 接口**: 33+ 个
+- **类型定义**: 60+ 个
 - **自定义 Hooks**: 6 个
 - **状态 Store**: 6 个
 
 ---
 
-**最后更新**: 2025-01-07  
+**最后更新**: 2025-01-18  
 **维护者**: Another Me Team  
-**版本**: 1.0.0
+**版本**: 1.1.0
+
+## 🆕 更新日志
+
+### v1.1.0 (2025-01-18)
+
+**新增功能**
+- ✨ 工作模式：项目拆解分析功能（支持 Markdown 展示）
+- ✨ 工作模式：历史项目查询功能
+- ✨ 工作模式：智能工作建议列表（支持分页）
+- ✨ 知识图谱：ECharts 力导向布局可视化
+- ✨ 知识图谱：支持工作模式三模块切换（待办管理/项目拆解/智能建议）
+- ✨ 配置页面：完整的配置加载/保存/测试接口
+
+**技术更新**
+- 📦 新增 ECharts 6.0 用于图谱可视化
+- 📦 新增 react-markdown 用于 Markdown 渲染
+- 🔧 优化 API 字段映射（embedding_mode/embedding_dim）
+- 🔧 所有接口采用 Mock 数据优先策略
+
+**Bug 修复**
+- 🐛 修复配置字段名不匹配问题
+- 🐛 修复图谱数据加载问题
