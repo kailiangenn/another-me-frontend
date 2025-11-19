@@ -61,6 +61,22 @@ export interface ConfigTestResult {
   embedding_dimension?: number;
 }
 
+/** 配置字典响应 */
+export interface ConfigDictResponse {
+  code: number;
+  msg: string;
+  data: {
+    models?: string[];           // 可用的 LLM 模型列表
+    embedding_models?: string[]; // 可用的 Embedding 模型列表
+    embedding_dims?: Record<string, number>; // 模型对应的维度
+    default_config?: {
+      model?: string;
+      embedding_model?: string;
+      embedding_dim?: number;
+    };
+  };
+}
+
 // ============ RAG 相关 ============
 export interface DocumentInfo {
   id: string;

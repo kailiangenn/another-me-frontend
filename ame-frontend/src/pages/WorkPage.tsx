@@ -1,11 +1,12 @@
 /**
  * 工作页面 - 一次滚动切换一个模块 + 右侧导航 + 暗版卡片边框 + 模块内独立滚动
  */
-import { Card, Typography, Input, Button, Divider, Space, Table, Tabs, Tag, message, List, Spin, Pagination } from 'antd';
+import { Card, Typography, Input, Button, Divider, Space, Table, Tabs, Tag, message, List, Spin } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { workAPI } from '@/api/workAPI';
-import type { ProjectAnalysisHistory, Pageable } from '@/types';
+import type { ProjectAnalysisHistory } from '@/types';
+import ReactMarkdown from 'react-markdown';
 
 const { Title, Paragraph } = Typography;
 
@@ -20,13 +21,9 @@ export default function WorkPage() {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   // 工作建议相关状态
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestionContent, setSuggestionContent] = useState<string>(''); // Markdown 内容
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [suggestPageable, setSuggestPageable] = useState<Pageable>({
-    page: 1,
-    size: 3,
-    total_count: 0,
-  });
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
 
   // 当前模块索引：0=待办，1=项目，2=智能建议
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -120,26 +117,40 @@ export default function WorkPage() {
   };
 
   // 加载工作建议
-  const loadWorkSuggestions = async (page: number = 1) => {
+  const loadWorkSuggestions = async () => {
     setLoadingSuggestions(true);
     try {
-      const result = await workAPI.getWorkSuggestions({ page, size: 3 });
+      const result = await workAPI.getWorkSuggestions();
       
       if (result.code === 200) {
-        setSuggestions(result.data);
-        setSuggestPageable(result.pageable);
+        setSuggestionContent(result.data || '');
       }
     } catch (error) {
       console.error('加载工作建议失败:', error);
-      message.error('加载工作建议失败');
+      // 不显示错误消息，静默失败
     } finally {
       setLoadingSuggestions(false);
     }
   };
 
-  // 分页变化
-  const handleSuggestPageChange = (page: number) => {
-    loadWorkSuggestions(page);
+  // 生成工作建议
+  const handleGenerateSuggestions = async () => {
+    setGeneratingSuggestions(true);
+    try {
+      const result = await workAPI.generateSuggestions();
+      
+      if (result.code === 200) {
+        setSuggestionContent(result.data);
+        message.success('建议生成成功！');
+      } else {
+        message.error('生成失败：' + result.msg);
+      }
+    } catch (error) {
+      console.error('生成工作建议失败:', error);
+      message.error('生成失败，请稍后重试');
+    } finally {
+      setGeneratingSuggestions(false);
+    }
   };
 
   // 组件加载时加载建议
@@ -618,38 +629,45 @@ export default function WorkPage() {
                 </Paragraph>
 
                 <div style={{ marginTop: '16px' }}>
-                  <Card type="inner" title="今日工作建议" style={{ borderRadius: 10 }}>
+                  <Card 
+                    type="inner" 
+                    title="今日工作建议" 
+                    style={{ borderRadius: 10 }}
+                    extra={
+                      <Button 
+                        type="primary" 
+                        onClick={handleGenerateSuggestions}
+                        loading={generatingSuggestions}
+                        size="small"
+                      >
+                        生成建议
+                      </Button>
+                    }
+                  >
                     {loadingSuggestions ? (
                       <div style={{ textAlign: 'center', padding: '20px 0' }}>
                         <Spin tip="加载中..." />
                       </div>
-                    ) : suggestions.length > 0 ? (
-                      <>
-                        <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                          {suggestions.map((suggestion, index) => (
-                            <li key={index} style={{ marginBottom: '12px', lineHeight: '1.6' }}>
-                              {suggestion}
-                            </li>
-                          ))}
-                        </ul>
-                        
-                        {suggestPageable.total_count > suggestPageable.size && (
-                          <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                            <Pagination
-                              current={suggestPageable.page}
-                              pageSize={suggestPageable.size}
-                              total={suggestPageable.total_count}
-                              onChange={handleSuggestPageChange}
-                              showSizeChanger={false}
-                              showTotal={(total) => `共 ${total} 条建议`}
-                            />
-                          </div>
-                        )}
-                      </>
+                    ) : suggestionContent ? (
+                      <div style={{ 
+                        padding: '16px',
+                        backgroundColor: '#fafafa',
+                        borderRadius: '8px',
+                        maxHeight: '500px',
+                        overflowY: 'auto'
+                      }}>
+                        <ReactMarkdown>{suggestionContent}</ReactMarkdown>
+                      </div>
                     ) : (
-                      <Paragraph type="secondary" style={{ margin: 0 }}>
-                        暂无建议
-                      </Paragraph>
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '40px 20px',
+                        color: '#999'
+                      }}>
+                        <Paragraph type="secondary" style={{ margin: 0 }}>
+                          暂无建议，请点击“生成建议”按钮获取 AI 工作建议
+                        </Paragraph>
+                      </div>
                     )}
                   </Card>
                 </div>

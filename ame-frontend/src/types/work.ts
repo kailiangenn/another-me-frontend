@@ -145,14 +145,77 @@ export interface Pageable {
 
 /** 今日工作建议请求参数 */
 export interface WorkSuggestRequest {
-  page?: number;  // 页码，默认 1
-  size?: number;  // 每页数量，默认 3
+  // 可以添加其他参数
+}
+
+/** 生成工作建议请求 */
+export interface GenerateSuggestRequest {
+  // 可以添加上下文信息等
+}
+
+/** 生成工作建议响应 */
+export interface GenerateSuggestResponse {
+  code: number;
+  msg: string;
+  data: string;  // Markdown 格式的建议内容
 }
 
 /** 今日工作建议响应 */
 export interface WorkSuggestResponse {
   code: number;
   msg: string;
-  data: string[];      // 建议列表
-  pageable: Pageable;  // 分页信息
+  data: string;        // Markdown 格式的建议内容
+}
+
+/** 任务列表请求 */
+export interface TaskListRequest {
+  page?: number;
+  page_size?: number;
+  status?: 'pending' | 'in_progress' | 'completed';
+}
+
+/** 任务列表响应 */
+export interface TaskListResponse {
+  code: number;
+  msg: string;
+  data: TodoItem[];
+  pageable?: Pageable;
+}
+
+/** 任务更新请求 */
+export interface TaskUpdateRequest {
+  task_id: string;
+  title?: string;
+  description?: string;
+  priority?: 'high' | 'medium' | 'low';
+  status?: 'pending' | 'in_progress' | 'completed';
+  deadline?: string;
+}
+
+/** 任务更新响应 */
+export interface TaskUpdateResponse {
+  code: number;
+  msg: string;
+  data?: TodoItem;
+}
+
+/** 任务分析请求 */
+export interface TaskAnalysisRequest {
+  task_desc: string;  // 任务描述
+}
+
+/** 任务分析响应 */
+export interface TaskAnalysisResponse {
+  code: number;
+  msg: string;
+  data: {
+    priority: 'high' | 'medium' | 'low';
+    estimated_hours?: number;
+    dependencies?: string[];
+    suggestions?: string[];
+    breakdown?: Array<{
+      step: string;
+      description: string;
+    }>;
+  };
 }

@@ -6,6 +6,7 @@ import type {
   ConfigSaveResponse,
   ConfigTestRequest,
   ConfigTestResponse,
+  ConfigDictResponse,
   BaseResponse,
   UploadResponse,
   SearchResponse,
@@ -83,24 +84,8 @@ class APIClient {
    * @returns 返回文档数、对话数和配置状态
    */
   async getHomeOverview(): Promise<HomeOverviewResponse> {
-    // TODO: 待后端就绪后替换为真实接口
-    // const response = await this.axios.get<HomeOverviewResponse>('/home');
-    // return response.data;
-
-    // Mock 数据（仅供前端开发使用）
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          code: 200,
-          msg: 'success',
-          data: {
-            document_num: 25,        // 模拟 RAG 知识库文档数
-            mem_num: 138,            // 模拟 MEM 对话数
-            complete_config: true,   // 模拟已完成配置
-          },
-        });
-      }, 300); // 模拟网络延迟
-    });
+    const response = await this.axios.get<HomeOverviewResponse>('/home');
+    return response.data;
   }
 
   // ============ 配置管理 ============
@@ -109,32 +94,16 @@ class APIClient {
    */
   async loadConfig(): Promise<APIConfig | null> {
     try {
-      // TODO: 待后端就绪后替换为真实接口
-      // const response = await this.axios.get<ConfigLoadResponse>('/config/load');
-      // if (response.data.code === 200) {
-      //   const config = response.data.data;
-      //   return {
-      //     ...config,
-      //     embedding_model: config.embedding_mode,
-      //     embedding_dimension: parseInt(config.embedding_dim)
-      //   };
-      // }
-      // return null;
-
-      // Mock 数据（仅供前端开发使用）
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            api_key: 'sk-mock-api-key-12345',
-            base_url: 'https://api.openai.com/v1',
-            model: 'gpt-3.5-turbo',
-            embedding_mode: 'text-embedding-3-small',
-            embedding_dim: '1536',
-            embedding_model: 'text-embedding-3-small',
-            embedding_dimension: 1536,
-          });
-        }, 300);
-      });
+      const response = await this.axios.get<ConfigLoadResponse>('/config/load');
+      if (response.data.code === 200) {
+        const config = response.data.data;
+        return {
+          ...config,
+          embedding_model: config.embedding_mode,
+          embedding_dimension: parseInt(config.embedding_dim)
+        };
+      }
+      return null;
     } catch (error) {
       console.error('Failed to load config:', error);
       return null;
@@ -155,23 +124,11 @@ class APIClient {
         embedding_dim: String(config.embedding_dimension || config.embedding_dim),
       };
 
-      // TODO: 待后端就绪后替换为真实接口
-      // const response = await this.axios.post<ConfigSaveResponse>('/config/save', requestData);
-      // return {
-      //   success: response.data.code === 200,
-      //   message: response.data.msg
-      // };
-
-      // Mock 数据（仅供前端开发使用）
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('保存配置:', requestData);
-          resolve({
-            success: true,
-            message: '配置保存成功',
-          });
-        }, 500);
-      });
+      const response = await this.axios.post<ConfigSaveResponse>('/config/save', requestData);
+      return {
+        success: response.data.code === 200,
+        message: response.data.msg
+      };
     } catch (error) {
       console.error('Failed to save config:', error);
       return {
@@ -195,29 +152,13 @@ class APIClient {
         embedding_dimension: config.embedding_dimension || parseInt(config.embedding_dim || '0'),
       };
 
-      // TODO: 待后端就绪后替换为真实接口
-      // const response = await this.axios.post<ConfigTestResponse>('/config/test', requestData);
-      // return {
-      //   success: response.data.code === 200 && response.data.data === true,
-      //   message: response.data.code === 200 ? '配置测试成功！' : response.data.msg,
-      //   model_available: response.data.data,
-      //   embedding_available: response.data.data,
-      // };
-
-      // Mock 数据（仅供前端开发使用）
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('测试配置:', requestData);
-          // 模拟成功情况
-          resolve({
-            success: true,
-            message: 'API 连接成功！\n• LLM 模型可用\n• Embedding 模型可用',
-            model_available: true,
-            embedding_available: true,
-            embedding_dimension: requestData.embedding_dimension,
-          });
-        }, 1000); // 模拟较长的测试时间
-      });
+      const response = await this.axios.post<ConfigTestResponse>('/config/test', requestData);
+      return {
+        success: response.data.code === 200 && response.data.data === true,
+        message: response.data.code === 200 ? '配置测试成功！' : response.data.msg,
+        model_available: response.data.data,
+        embedding_available: response.data.data,
+      };
     } catch (error) {
       console.error('Failed to test config:', error);
       return {
@@ -225,6 +166,29 @@ class APIClient {
         message: 'API 连接失败，请检查配置',
         model_available: false,
         embedding_available: false,
+      };
+    }
+  }
+
+  /**
+   * 获取配置字典数据
+   * @returns 返回可用的模型列表和默认配置
+   */
+  async getConfigDict(): Promise<ConfigDictResponse> {
+    try {
+      const response = await this.axios.get<ConfigDictResponse>('/config/dict');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get config dict:', error);
+      // 返回默认值
+      return {
+        code: 500,
+        msg: '获取配置字典失败',
+        data: {
+          models: [],
+          embedding_models: [],
+          embedding_dims: {},
+        },
       };
     }
   }

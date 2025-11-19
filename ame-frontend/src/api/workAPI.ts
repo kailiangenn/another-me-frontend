@@ -17,6 +17,14 @@ import type {
   ProjectHistoryResponse,
   WorkSuggestRequest,
   WorkSuggestResponse,
+  GenerateSuggestRequest,
+  GenerateSuggestResponse,
+  TaskListRequest,
+  TaskListResponse,
+  TaskUpdateRequest,
+  TaskUpdateResponse,
+  TaskAnalysisRequest,
+  TaskAnalysisResponse,
 } from '@/types';
 
 class WorkAPIClient {
@@ -70,21 +78,8 @@ class WorkAPIClient {
    * @returns 返回拆解结果文档信息
    */
   async analyzeProject(request: ProjectAnalysisRequest): Promise<ProjectAnalysisResponse> {
-    // TODO: 待后端就绪后替换为真实接口
-    // const response = await this.axios.post<ProjectAnalysisResponse>('/project/analysis', request);
-    // return response.data;
-
-    // Mock 数据（仅供前端开发使用）
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          code: 200,
-          msg: 'success',
-          fileTitle: `${request.project_desc.substring(0, 20)}… - 项目拆解分析`,
-          fileUrl: 'mock_analysis_' + Date.now(), // Mock 文档 ID
-        });
-      }, 800); // 模拟分析耗时
-    });
+    const response = await this.axios.post<ProjectAnalysisResponse>('/project/analysis', request);
+    return response.data;
   }
 
   /**
@@ -93,88 +88,62 @@ class WorkAPIClient {
    * @returns 返回历史记录列表
    */
   async getProjectHistory(request: ProjectHistoryRequest = {}): Promise<ProjectHistoryResponse> {
-    // TODO: 待后端就绪后替换为真实接口
-    // const response = await this.axios.post<ProjectHistoryResponse>('/project/history', request);
-    // return response.data;
-
-    // Mock 数据（仅供前端开发使用）
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          code: 200,
-          msg: 'success',
-          data: [
-            {
-              title: '智能客服系统 - 项目拆解分析',
-              fileUrl: 'mock_analysis_1732456789123',
-              id: '1',
-              createdAt: new Date(Date.now() - 86400000).toLocaleString('zh-CN'),
-            },
-            {
-              title: '电商平台后台系统 - 项目拆解分析',
-              fileUrl: 'mock_analysis_1732370389123',
-              id: '2',
-              createdAt: new Date(Date.now() - 172800000).toLocaleString('zh-CN'),
-            },
-            {
-              title: '数据分析可视化平台 - 项目拂解分析',
-              fileUrl: 'mock_analysis_1732283989123',
-              id: '3',
-              createdAt: new Date(Date.now() - 259200000).toLocaleString('zh-CN'),
-            },
-          ],
-        });
-      }, 400); // 模拟网络延迟
+    const response = await this.axios.get<ProjectHistoryResponse>('/project/history', {
+      params: request
     });
+    return response.data;
   }
 
   /**
-   * 获取今日工作建议列表
-   * @param request - 分页参数
-   * @returns 返回建议列表
+   * 获取工作建议内容
+   * @param request - 请求参数
+   * @returns 返回 Markdown 格式的建议内容
    */
   async getWorkSuggestions(request: WorkSuggestRequest = {}): Promise<WorkSuggestResponse> {
-    const { page = 1, size = 3 } = request;
-    
-    // TODO: 待后端就绪后替换为真实接口
-    // const response = await this.axios.get<WorkSuggestResponse>('/suggest/list', {
-    //   params: { page, size }
-    // });
-    // return response.data;
+    const response = await this.axios.get<WorkSuggestResponse>('/suggest');
+    return response.data;
+  }
 
-    // Mock 数据（仅供前端开发使用）
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // 模拟更多建议数据
-        const allSuggestions = [
-          '优先完成高优先级任务：完成项目规划文档，该任务对项目进度影响较大',
-          '建议在上午10点前准备好会议材料，留出充裕的复查时间',
-          '考虑更新项目文档以保持信息同步，避免团队成员信息差异',
-          '今天下午15:00 有项目评审会，请提前准备好汇报 PPT',
-          '建议花 30 分钟复盘上周工作内容，梳理本周工作重点',
-          '注意与前端团队沟通 API 接口进度，确保前后端协作顺畅',
-          '建议下班前花 15 分钟整理明天的待办事项，提高第二天效率',
-          '今日代码提交前请确保通过单元测试，减少线上问题',
-          '关注一下服务器监控指标，最近 CPU 使用率偏高',
-          '建议参加下午16:00 的技术分享会，主题是微服务架构优化',
-        ];
+  /**
+   * 生成工作建议
+   * @param request - 生成请求参数
+   * @returns 返回生成的 Markdown 建议
+   */
+  async generateSuggestions(request: GenerateSuggestRequest = {}): Promise<GenerateSuggestResponse> {
+    const response = await this.axios.post<GenerateSuggestResponse>('/suggest/generate', request);
+    return response.data;
+  }
 
-        const startIndex = (page - 1) * size;
-        const endIndex = startIndex + size;
-        const pageData = allSuggestions.slice(startIndex, endIndex);
-
-        resolve({
-          code: 200,
-          msg: 'success',
-          data: pageData,
-          pageable: {
-            page,
-            size,
-            total_count: allSuggestions.length,
-          },
-        });
-      }, 300); // 模拟网络延迟
+  /**
+   * 获取任务列表
+   * @param request - 分页和筛选参数
+   * @returns 返回任务列表
+   */
+  async getTaskList(request: TaskListRequest = {}): Promise<TaskListResponse> {
+    const response = await this.axios.get<TaskListResponse>('/task/list', {
+      params: request
     });
+    return response.data;
+  }
+
+  /**
+   * 更新任务
+   * @param request - 任务更新数据
+   * @returns 返回更新结果
+   */
+  async updateTask(request: TaskUpdateRequest): Promise<TaskUpdateResponse> {
+    const response = await this.axios.post<TaskUpdateResponse>('/task/update', request);
+    return response.data;
+  }
+
+  /**
+   * 任务分析
+   * @param request - 任务描述
+   * @returns 返回任务分析结果
+   */
+  async analyzeTask(request: TaskAnalysisRequest): Promise<TaskAnalysisResponse> {
+    const response = await this.axios.post<TaskAnalysisResponse>('/task/analysis', request);
+    return response.data;
   }
 }
 

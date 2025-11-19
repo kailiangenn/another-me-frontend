@@ -163,92 +163,12 @@ class GraphAPI {
   async getRagGraph(type: 'work' | 'life' | 'mem', depth: number = 2): Promise<RagGraphResponse> {
     console.log('getRagGraph 调用:', { type, depth });
     
-    // TODO: 待后端就绪后替换为真实接口
-    // const response = await this.axios.get<RagGraphResponse>('/rag/graph', {
-    //   params: { type, depth }
-    // });
-    // return response.data;
-
-    // Mock 数据（仅供前端开发使用）
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const mockData = this.generateMockGraphData(type, depth);
-        console.log('Mock 数据生成:', mockData);
-        resolve(mockData);
-      }, 800);
+    const response = await this.axios.get<RagGraphResponse>('/rag/graph', {
+      params: { type, depth }
     });
+    return response.data;
   }
 
-  /**
-   * 生成 Mock 图谱数据
-   */
-  private generateMockGraphData(type: string, depth: number): RagGraphResponse {
-    console.log('generateMockGraphData 调用:', { type, depth });
-    const nodes: GraphNode[] = [];
-    const edges: GraphEdge[] = [];
-
-    if (type === 'work') {
-      // 工作模式图谱
-      nodes.push(
-        { id: '1', name: '项目规划' },
-        { id: '2', name: '需求分析' },
-        { id: '3', name: '技术设计' },
-        { id: '4', name: '开发任务' },
-        { id: '5', name: '测试验证' },
-        { id: '6', name: '上线部署' },
-        { id: '7', name: '运维监控' },
-        { id: '8', name: '团队协作' },
-      );
-      edges.push(
-        { source: '1', target: '2', relation: '包含' },
-        { source: '1', target: '3', relation: '包含' },
-        { source: '2', target: '4', relation: '依赖' },
-        { source: '3', target: '4', relation: '依赖' },
-        { source: '4', target: '5', relation: '后续' },
-        { source: '5', target: '6', relation: '后续' },
-        { source: '6', target: '7', relation: '后续' },
-        { source: '1', target: '8', relation: '需要' },
-      );
-    } else if (type === 'life') {
-      // 生活模式图谱
-      nodes.push(
-        { id: '1', name: '健康管理' },
-        { id: '2', name: '运动锻炼' },
-        { id: '3', name: '饮食营养' },
-        { id: '4', name: '学习成长' },
-        { id: '5', name: '社交休闲' },
-        { id: '6', name: '兴趣爱好' },
-        { id: '7', name: '家庭生活' },
-      );
-      edges.push(
-        { source: '1', target: '2', relation: '包含' },
-        { source: '1', target: '3', relation: '包含' },
-        { source: '4', target: '6', relation: '促进' },
-        { source: '5', target: '6', relation: '相关' },
-        { source: '7', target: '5', relation: '影响' },
-      );
-    } else {
-      // MEM 模式图谱
-      nodes.push(
-        { id: '1', name: '聊天记录' },
-        { id: '2', name: '情感记忆' },
-        { id: '3', name: '知识学习' },
-        { id: '4', name: '个人喜好' },
-        { id: '5', name: '行为模式' },
-        { id: '6', name: '语言风格' },
-      );
-      edges.push(
-        { source: '1', target: '2', relation: '生成' },
-        { source: '1', target: '3', relation: '生成' },
-        { source: '2', target: '4', relation: '反映' },
-        { source: '3', target: '5', relation: '形成' },
-        { source: '1', target: '6', relation: '塑造' },
-      );
-    }
-
-    console.log('Mock 数据生成完成:', { nodeCount: nodes.length, edgeCount: edges.length });
-    return { nodes, edges };
-  }
 }
 
 export const graphAPI = new GraphAPI();
