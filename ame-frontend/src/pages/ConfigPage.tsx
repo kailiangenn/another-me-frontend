@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, Card, Typography, message, Space, Alert, Divider, InputNumber, Tag } from 'antd';
-import { SaveOutlined, CheckCircleOutlined, ApiOutlined, ThunderboltOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, message, Space, Alert } from 'antd';
+import { SaveOutlined, CheckCircleOutlined, ApiOutlined } from '@ant-design/icons';
 import { useConfigStore } from '@/store';
 import apiClient from '@/api/client';
 import type { ConfigTestResult } from '@/types';
@@ -92,8 +92,6 @@ export default function ConfigPage() {
             <p>• API Key: 你的 API 密钥</p>
             <p>• Base URL: API 服务地址，默认为 OpenAI 官方地址</p>
             <p>• Model: 对话模型名称，如 gpt-3.5-turbo、qwen-turbo 等</p>
-            <p>• Embedding Model: 文本向量化模型名称</p>
-            <p>• Embedding Dimension: 向量维度，需与模型匹配</p>
           </div>
         }
         type="info"
@@ -108,8 +106,6 @@ export default function ConfigPage() {
           initialValues={{
             base_url: 'https://api.openai.com/v1',
             model: 'gpt-3.5-turbo',
-            embedding_model: 'text-embedding-3-small',
-            embedding_dimension: 1536,
           }}
         >
           <Form.Item
@@ -147,50 +143,6 @@ export default function ConfigPage() {
             <Input placeholder="输入模型名称" />
           </Form.Item>
 
-          <Divider orientation="left">
-            <Space>
-              <ThunderboltOutlined />
-              Embedding 配置
-            </Space>
-          </Divider>
-
-          <Form.Item
-            label="Embedding 模型"
-            name="embedding_model"
-            rules={[{ required: true, message: '请输入 Embedding 模型名称' }]}
-            extra="用于文本向量化，如 text-embedding-3-small、text-embedding-v2 等"
-          >
-            <Input placeholder="输入 Embedding 模型名称" />
-          </Form.Item>
-
-          <Form.Item
-            label="Embedding 维度"
-            name="embedding_dimension"
-            rules={[
-              { required: true, message: '请输入 Embedding 维度' },
-              { type: 'number', min: 128, max: 4096, message: '维度必须在 128-4096 之间' }
-            ]}
-            extra="模型输出的向量维度，如 1536、3072 等"
-          >
-            <InputNumber 
-              style={{ width: '100%' }}
-              placeholder="输入维度，如 1536" 
-              min={128}
-              max={4096}
-              step={1}
-            />
-          </Form.Item>
-
-          <Alert
-            message="重要提示"
-            description="修改 Embedding 配置后，需要重新处理所有文档和记忆数据。请确保配置的模型名称和维度与你使用的平台一致。"
-            type="warning"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-
-          <Divider />
-
           {/* 测试结果 */}
           {testResult && (
             <Alert
@@ -198,47 +150,6 @@ export default function ConfigPage() {
               description={
                 <div style={{ whiteSpace: 'pre-line' }}>
                   {testResult.message}
-                  
-                  {/* 详细状态 */}
-                  {(testResult.model_available !== undefined || 
-                    testResult.embedding_available !== undefined) && (
-                    <div style={{ marginTop: 12 }}>
-                      <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                        {testResult.model_available !== undefined && (
-                          <div>
-                            <Tag 
-                              icon={testResult.model_available ? <CheckOutlined /> : <CloseOutlined />}
-                              color={testResult.model_available ? 'success' : 'error'}
-                            >
-                              LLM 模型
-                            </Tag>
-                            <span style={{ marginLeft: 8, color: '#666' }}>
-                              {testResult.model_available ? '可用' : '不可用'}
-                            </span>
-                          </div>
-                        )}
-                        
-                        {testResult.embedding_available !== undefined && (
-                          <div>
-                            <Tag 
-                              icon={testResult.embedding_available ? <CheckOutlined /> : <CloseOutlined />}
-                              color={testResult.embedding_available ? 'success' : 'error'}
-                            >
-                              Embedding 模型
-                            </Tag>
-                            <span style={{ marginLeft: 8, color: '#666' }}>
-                              {testResult.embedding_available ? '可用' : '不可用'}
-                            </span>
-                            {testResult.embedding_dimension && (
-                              <span style={{ marginLeft: 8, color: '#999' }}>
-                                (实际维度: {testResult.embedding_dimension})
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </Space>
-                    </div>
-                  )}
                 </div>
               }
               type={testResult.success ? 'success' : 'error'}
@@ -295,19 +206,6 @@ export default function ConfigPage() {
           
           <p><strong>Q: 配置保存在哪里？</strong></p>
           <p>A: 配置保存在后端服务器上，不会泄露到浏览器</p>
-
-          <Divider />
-
-          <p><strong>Q: Embedding 模型和维度如何填写？</strong></p>
-          <p>A: 根据你使用的平台文档填写：</p>
-          <ul style={{ marginLeft: 20 }}>
-            <li>OpenAI: text-embedding-3-small (1536维) 或 text-embedding-3-large (3072维)</li>
-            <li>通义千问: text-embedding-v2 (1536维)</li>
-            <li>智谱AI: embedding-2 (1024维)</li>
-          </ul>
-
-          <p><strong>Q: 修改 Embedding 配置后需要做什么？</strong></p>
-          <p>A: 需要重新上传所有文档和记忆，因为不同模型/维度生成的向量不兼容。建议在首次使用时就配置好。</p>
         </div>
       </Card>
     </div>
