@@ -74,6 +74,8 @@ export default function EChartsGraph({
       lineStyle: {
         curveness: 0.3,
       },
+      symbol: ['none', 'arrow'],  // 增加箭头：起点无符号，终点为箭头
+      symbolSize: [0, 10],          // 箭头大小
     }));
 
     // 配置 ECharts 选项
@@ -132,6 +134,8 @@ export default function EChartsGraph({
             curveness: 0.3,
             opacity: 0.6,
           },
+          edgeSymbol: ['none', 'arrow'],  // 全局设置边箭头
+          edgeSymbolSize: [0, 10],        // 箭头大小,
         },
       ],
     };

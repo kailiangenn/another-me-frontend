@@ -13,7 +13,7 @@ export default function GraphPage() {
   const [graphNodes, setGraphNodes] = useState<GraphNode[]>([]);
   const [graphEdges, setGraphEdges] = useState<GraphEdge[]>([]);
   const [stats, setStats] = useState<GraphStatsResponse | null>(null);
-  const [searchType, setSearchType] = useState<'todo' | 'project' | 'suggest'>('todo');
+  const [searchType, setSearchType] = useState<'work' | 'life'>('work');
   const [depth, setDepth] = useState(2);
 
   // 加载图谱统计信息
@@ -32,22 +32,15 @@ export default function GraphPage() {
   };
 
   // 加载图谱数据
-  const loadGraphData = async (type?: 'todo' | 'project' | 'suggest', searchDepth?: number) => {
+  const loadGraphData = async (type?: 'work' | 'life', searchDepth?: number) => {
     setLoading(true);
     try {
       const graphType = type || searchType;
       const actualDepth = searchDepth || depth;
       
-      // 映射 searchType 到 API 参数
-      const typeMap: Record<string, 'work' | 'life' | 'mem'> = {
-        'todo': 'work',
-        'project': 'work',
-        'suggest': 'work',
-      };
+      console.log('加载图谱数据:', { graphType, actualDepth });
       
-      console.log('加载图谱数据:', { graphType, actualDepth, apiType: typeMap[graphType] });
-      
-      const result = await graphAPI.getRagGraph(typeMap[graphType], actualDepth);
+      const result = await graphAPI.getRagGraph(graphType, actualDepth);
       
       console.log('图谱数据加载成功:', result);
       
@@ -125,9 +118,8 @@ export default function GraphPage() {
             onChange={setSearchType}
             style={{ width: 150 }}
             options={[
-              { label: '待办管理', value: 'todo' },
-              { label: '项目拆解', value: 'project' },
-              { label: '智能建议', value: 'suggest' },
+              { label: '工作图谱', value: 'work' },
+              { label: '生活图谱', value: 'life' },
             ]}
           />
           
@@ -143,13 +135,7 @@ export default function GraphPage() {
           />
 
           <Search
-            placeholder={
-              searchType === 'todo'
-                ? '输入待办任务关键词'
-                : searchType === 'project'
-                ? '输入项目关键词'
-                : '输入建议关键词'
-            }
+            placeholder={searchType === 'work' ? '输入工作相关关键词' : '输入生活相关关键词'}
             enterButton="搜索"
             size="middle"
             onSearch={handleSearch}
@@ -170,9 +156,8 @@ export default function GraphPage() {
 
         <div style={{ marginTop: spacing.sm, fontSize: 12, color: '#666' }}>
           💡 提示：
-          {searchType === 'todo' && ' 搜索待办任务及其关联信息'}
-          {searchType === 'project' && ' 搜索项目拆解分析及其关联内容'}
-          {searchType === 'suggest' && ' 搜索工作建议及其相关信息'}
+          {searchType === 'work' && ' 搜索工作相关的项目、待办、建议等信息'}
+          {searchType === 'life' && ' 搜索生活相关的心情、兴趣、事件等信息'}
         </div>
       </Card>
 
@@ -181,7 +166,7 @@ export default function GraphPage() {
         nodes={graphNodes}
         edges={graphEdges}
         loading={loading}
-        title={`${searchType === 'todo' ? '待办管理' : searchType === 'project' ? '项目拆解' : '智能建议'}知识图谱`}
+        title={`${searchType === 'work' ? '工作' : '生活'}知识图谱`}
         height={600}
       />
 

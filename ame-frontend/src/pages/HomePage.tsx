@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Card, Row, Col, Alert, Button, Space, Typography, Spin, Statistic } from 'antd';
+import { Card, Row, Col, Alert, Button, Space, Typography, Spin } from 'antd';
 import { 
   CheckCircleOutlined,
   WarningOutlined,
   RocketOutlined,
-  FileTextOutlined,
-  MessageOutlined,
+  CoffeeOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/api/client';
@@ -15,10 +14,6 @@ const { Title, Paragraph } = Typography;
 export default function HomePage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    documents: 0,
-    messages: 0,
-  });
   const [systemHealth, setSystemHealth] = useState<'healthy' | 'error' | 'unconfigured'>('unconfigured');
 
   useEffect(() => {
@@ -32,12 +27,7 @@ export default function HomePage() {
       const overviewRes = await apiClient.getHomeOverview();
       
       if (overviewRes.code === 200 && overviewRes.data) {
-        const { document_num, mem_num, complete_config } = overviewRes.data;
-        
-        setStats({
-          documents: document_num,
-          messages: mem_num,
-        });
+        const { complete_config } = overviewRes.data;
         
         // 根据 complete_config 决定系统状态
         setSystemHealth(complete_config ? 'healthy' : 'unconfigured');
@@ -90,33 +80,62 @@ export default function HomePage() {
         />
       )}
 
-      {/* 统计卡片 */}
+      {/* 快速入口卡片 */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin size="large" tip="加载统计信息..." />
+          <Spin size="large" tip="加载中..." />
         </div>
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[24, 24]}>
+          {/* 开始工作 */}
           <Col xs={24} sm={12}>
-            <Card hoverable>
-              <Statistic
-                title="RAG 知识库"
-                value={stats.documents}
-                prefix={<FileTextOutlined style={{ color: '#1890ff' }} />}
-                suffix="个文档"
-                valueStyle={{ color: '#1890ff' }}
-              />
+            <Card 
+              hoverable
+              style={{ 
+                textAlign: 'center',
+                height: '280px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/work')}
+            >
+              <div style={{ color: '#fff' }}>
+                <RocketOutlined style={{ fontSize: 80, marginBottom: 24 }} />
+                <Title level={2} style={{ color: '#fff', marginBottom: 16 }}>开始工作</Title>
+                <Paragraph style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.9)' }}>
+                  项目拆解 · 待办管理 · 智能建议
+                </Paragraph>
+              </div>
             </Card>
           </Col>
+
+          {/* 休息一下 */}
           <Col xs={24} sm={12}>
-            <Card hoverable>
-              <Statistic
-                title="MEM 对话"
-                value={stats.messages}
-                prefix={<MessageOutlined style={{ color: '#52c41a' }} />}
-                suffix="条消息"
-                valueStyle={{ color: '#52c41a' }}
-              />
+            <Card 
+              hoverable
+              style={{ 
+                textAlign: 'center',
+                height: '280px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/life')}
+            >
+              <div style={{ color: '#fff' }}>
+                <CoffeeOutlined style={{ fontSize: 80, marginBottom: 24 }} />
+                <Title level={2} style={{ color: '#fff', marginBottom: 16 }}>休息一下</Title>
+                <Paragraph style={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.9)' }}>
+                  心情记录 · 兴趣追踪 · 生活建议
+                </Paragraph>
+              </div>
             </Card>
           </Col>
         </Row>
@@ -125,14 +144,15 @@ export default function HomePage() {
       {/* 快速开始指引 */}
       <Card style={{ marginTop: 24 }}>
         <Title level={4}>
-          <RocketOutlined /> 快速开始
+          💡 使用提示
         </Title>
         <Paragraph style={{ fontSize: '15px', lineHeight: '2' }}>
           <strong>1. 配置系统</strong><br />
           前往 <a href="#" onClick={(e) => { e.preventDefault(); navigate('/config'); }}>配置</a> 页面，设置你的 OpenAI API Key 和相关参数
           <br /><br />
-          <strong>2. 开始使用</strong><br />
-          配置完成后，就可以开始使用工作模式和生活模式了
+          <strong>2. 选择模式</strong><br />
+          • <strong>开始工作</strong>：进入工作模式，管理项目和待办事项<br />
+          • <strong>休息一下</strong>：进入生活模式，记录心情和追踪兴趣
         </Paragraph>
         <Space style={{ marginTop: 16 }}>
           <Button 
@@ -140,10 +160,13 @@ export default function HomePage() {
             icon={<RocketOutlined />}
             onClick={() => navigate(systemHealth === 'unconfigured' ? '/config' : '/work')}
           >
-            {systemHealth === 'unconfigured' ? '开始配置' : '开始使用'}
+            {systemHealth === 'unconfigured' ? '开始配置' : '进入工作模式'}
           </Button>
-          <Button onClick={loadStats}>
-            刷新统计
+          <Button 
+            icon={<CoffeeOutlined />}
+            onClick={() => navigate('/life')}
+          >
+            进入生活模式
           </Button>
         </Space>
       </Card>
